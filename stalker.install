@@ -1,0 +1,57 @@
+<?php
+
+/**
+*
+*
+**/
+
+function stalker_schema(){
+	$schema = array();
+
+	$schema['stalker'] = array(
+	  'description' => 'TODO: please describe this table!',
+	  'fields' => array(
+	    'stalker_uid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'profile_uid' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'view_count' => array(
+	      'description' => 'TODO: please describe this field!',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	    'last_stalk' => array(
+	      'description' => 'Last time this user stalked',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    ),
+	  ),
+	  'primary key' => array('stalker_uid', 'profile_uid'),
+	);
+
+	return $schema;
+}
+
+
+function stalker_install(){
+	drupal_install_schema('stalker');
+}
+
+
+function stalker_update_7001(){
+
+	$spec = array(
+	      'description' => 'Last time this user stalked',
+	      'type' => 'int',
+	      'not null' => TRUE,
+	    );
+
+	db_add_field('stalker', 'last_stalk', $spec, $keys_new = array());
+}
+

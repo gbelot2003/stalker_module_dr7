@@ -1,0 +1,7 @@
+name = Stalker Module
+description = Modulo de Ejemplo para Stalkers en sitio web
+package = Personal Modules Develomet
+core = 7.x
+
+
+

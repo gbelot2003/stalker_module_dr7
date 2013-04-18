@@ -1,0 +1,132 @@
+<?php
+
+/**
+ * @file
+ * Module file for menu_example.
+ */
+
+/*
+* Implementamos los permisos de la pagina para tenerlos listos
+*/
+
+
+
+function stalker_permission() {
+  return array(
+    'usar modulo stalker' => array(
+      'title' => t('Administra el Modulo Stalker'),
+      'description' => t('Perform administration tasks for my module.'),
+    ),
+  );
+}
+
+function stalker_get_count($user, $account){
+
+  $result = db_select('stalker', 'n')
+    ->fields('n', array('view_count'))
+    ->condition('stalker_uid', $user, '=')
+    ->condition('profile_uid', $account, '=')
+    ->execute();
+    return $result->fetchField();
+}
+
+
+function stalker_set_count($views, $user, $account){
+    $result = db_merge('stalker')
+          ->key(array( // Estas deben ser los campos clave de la tabla misma, sino da error
+              'stalker_uid' => $user,
+              'profile_uid' => $account,
+                ))
+          ->insertFields(array(
+              'view_count' => $views,
+              'stalker_uid' => $user,
+              'profile_uid' => $account,
+          ))
+          ->updateFields(array(
+              'view_count' => $views,
+          ))
+          ->execute();
+    return $result;
+}
+
+
+function stalker_user_view($account){
+  global $user;
+  if($user->uid != $account->uid): //revisamos que el usuario no esta en su propio profile
+    if(user_access('usar modulo stalker'))://Si el que ve, tiene los permisos que se construya lo siguiente
+
+      //Contruccion del renderable Array---
+      $account->content['stalker']['#type'] = 'user_profile_item';
+      $account->content['stalker']['#title'] = t('profile Hits');
+      $account->content['stalker']['#weigth'] = -5;
+      //Aquí enviamos el markup a una funcion theme---
+      $account->content['stalker']['#markup'] = theme('stalker_user_view', array('account' => $account));
+    endif;
+  endif;
+}
+
+function stalker_theme(){
+    return array(
+        'stalker_user_view' => array(
+          'variables' => array('account' => NULL),
+          'function' => 'theme_stalker_user_view',
+          ),
+      );
+}
+
+function theme_stalker_user_view($variables){
+  global $user;
+
+  $view_count = stalker_get_count($user->uid, $variables['account']->uid);
+
+  if($view_count == NULL){
+    $view_count = 0;
+  }
+
+  ++$view_count;
+  stalker_set_count($view_count, $user->uid, $variables['account']->uid);
+  return t("You have seen this profile :d times", array(':d' => $view_count));
+}
+
+function stalker_menu(){
+
+  $items = array();
+  $items['admin/config/people/stalker'] = array( // ruta creada automaticamente por el menu API
+      'title' => 'Stalker settings',  // Titulo del menu en cuestion, warp en html
+      'file' => 'stalker.admin.page.inc',
+      'description' => 'Configuration options for Stalker Module', //Descripcion de configuraciones
+      'page callback' => 'admin_config_people_stalker',
+      'page arguments' => array(t('Page for settings all options for salker module', array('!link' => url('admin/config/people/stalker')))),
+      'access callback' => 'user_access',
+      'access arguments' => array('administer site configuration'),
+  );
+
+  $items['user/%user/stalker'] = array(
+      'type' =>  MENU_LOCAL_TASK,
+      'file' => 'stalker.page.inc',
+      'title' => 'Top Stalkers',
+      'page callback' => 'staker_user_page',
+      'page arguments' => array(1),
+      'access callback' => 'stalker_node_access',
+      'access arguments' => array(1),
+      'weigth' => 20,
+  );
+
+  return $items;
+}
+
+
+function stalker_node_access($account){
+  global $user;
+
+
+  if(!isset($account->uid)){
+    return;
+
+  } elseif ($user->uid == $account->uid || user_access('usar modulo stalker')) {
+
+       return TRUE;
+  }
+
+      return FALSE;
+}
