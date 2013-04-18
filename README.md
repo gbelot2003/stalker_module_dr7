@@ -10,4 +10,6 @@ The modules is not finished yet, is on 90% complete
 Esta es la actualización del modulo stalker originalmente desarrollado por Lulabot como ejemplo durante la grabación del video Tutorial
 de desarrollo de modulos para Drupal 6.
 
-Es la misma versión, con los respectivos cambios en las nueva API de bases de datos
+Es la misma versión, con los respectivos cambios en las nueva API de bases de datos.
+
+El modulo aun no esta terminado, pero se a completado el 90% del mismo.
